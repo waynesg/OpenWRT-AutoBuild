@@ -1,24 +1,12 @@
-#
-# 请大家记住拉取的是我的 281677160/build-actions 仓库，拉取的是其他仓库有问题，别问我，我也不清楚什么问题
-#
-# 因为SSH连接配置固件直接编译，会给github停止编译的,所以要另外触发启动编译程序
-#
-# 新注册的帐号，SSH连接服务器的时间最好不要太长，10分钟左右就退出，没设置完就再来一次或者多次应该比较好
-#
-# 运行此程序不是直接编译，是修改配置文件和触发编译，正确运行完毕后，在Actions刷新网页看看你的编译程序运行了没有
-#
-# 一般情况下都能触发启动编译的，除非没设置好密匙，或者密匙过期了，或者密匙错误之类的
-#
 # REPO_TOKEN密匙制作教程：https://git.io/jm.md
-#
-#
 
-name: Lede-大雕
+
+name: Lede
 on:
   workflow_dispatch:
     inputs:
       REPO_BRANCH:
-        description: '大雕源码'
+        description: 'Lean'
         required: true
         default: 'master'
         type: choice
@@ -31,14 +19,22 @@ on:
         type: choice
         options:
           - 'asus_rt-acrh17'
-          - 'd-team_newifi-d2'
-          - 'p2w_r619ac-128m'
+          - 'newifi-d1'
+          - 'newifi-d2'
+          - 'k2p'
           - 'x86_32'
           - 'x86_64'
+          - 'r2c'
+          - 'r2s'
+          - 'r4s'
+          - 'r5s'
           - 'xiaomi_mi-router-4a-gigabit'
           - 'xiaomi_redmi-router-ac2100'
           - 'xiaomi_redmi-router-ax6s'
+          - 'xiaomi_mi-router-3g'
           - 'xiaoyu_xy-c5'
+          - 'ax3600'
+          - 'p2w_r619ac-128m'
       CPU_SELECTION:
         description: 'CPU优选,增加编译速度'
         required: true
@@ -71,7 +67,7 @@ on:
       UPLOAD_RELEASE:
         description: '上传固件到 Github Releases'
         required: false
-        default: 'false'
+        default: 'true'
         type: boolean
       CACHEWRTBUILD_SWITCH:
         description: '缓存加速编译'
@@ -108,7 +104,7 @@ env:
 
 jobs:
   build:
-    name: 启动"${{ matrix.target }}-${{ github.event.inputs.REPO_BRANCH }}"触发编译
+    name: 触发编译
     runs-on: ubuntu-22.04
     if: ${{ github.event.repository.owner.id }} == ${{ github.event.sender.id }}
     
@@ -122,11 +118,10 @@ jobs:
         # 请勿对 target: [Lede] 做任何修改
         
     steps:
-    - name: 密匙检测（密匙为空则退出）
+    - name: 密匙检测
       run: |
         cd ${GITHUB_WORKSPACE}
         if [[ -z "${{ secrets.REPO_TOKEN }}" ]]; then
-          echo "您没有设置仓库密匙，请按教程设置好密匙再来"
           echo "REPO_TOKEN密匙制作教程：https://git.io/jm.md"
           exit 1
         fi
@@ -134,7 +129,7 @@ jobs:
     - name: 准备结束
       uses: actions/checkout@v3  
 
-    - name: 读取脚本设置
+    - name: 读取脚本
       run: |
         cd ${GITHUB_WORKSPACE}
         git clone https://github.com/281677160/common-main build/common
@@ -155,7 +150,7 @@ jobs:
         source build/${{ env.FOLDER_NAME }}/common.sh && Diy_menu1
         echo "${{ github.event.schedule }}"
         
-    - name: 部署编译环境
+    - name: 部署环境
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
@@ -167,52 +162,44 @@ jobs:
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
     
-    - name: 下载"${{ matrix.target }}"源码
+    - name: 下载源码
       working-directory: /${{ env.DIY_WORK }}
       run: |
         git clone -b "${REPO_BRANCH}" --single-branch "${REPO_URL}" openwrt
         ln -sf /${{ env.DIY_WORK }}/openwrt ${GITHUB_WORKSPACE}/openwrt
         source ${GITHUB_WORKSPACE}/build/${{ env.FOLDER_NAME }}/common.sh && Diy_checkout
-    
-    - name: 公 告
-      if: env.REPO_TOKEN
-      run: |
-        cd ${GITHUB_WORKSPACE}
-        cp -Rf `find ./ -maxdepth 1 -type d ! -path './openwrt' ! -path './'` openwrt
-        cd openwrt
-        source ${BUILD_PATH}/common.sh && Diy_menu2
  
-    - name: 增加插件源
+    - name: 添加插件
       if: env.REPO_TOKEN
       run: |
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_menu3
  
-    - name: 加载diy-part.sh文件
+    - name: 加载文件
       if: env.REPO_TOKEN
       run: |
         cd openwrt
         source $BUILD_PATH/$DIY_PART_SH
         source ${BUILD_PATH}/common.sh && Diy_Publicarea
         
-    - name: 加载源、补丁和files文件夹
+    - name: 加载补丁
       if: env.REPO_TOKEN
       run: |
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_menu4
     
-    - name: SSH远程连接（制作.config配置文件）
+    - name: 远程连接
       if: github.event.inputs.SSH_ACTION == 'true'
       uses: danshui-git/debugger-action@main
 
-    - name: 生成"${{ matrix.target }}"配置文件
+    - name: 生成配置
       if: env.REPO_TOKEN
       id: compile
       run: |
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_menu5
         
-    - name: 上传.config配置文件在 github actions
+    - name: 上传配置
       if: steps.compile.outcome == 'success'
       uses: actions/upload-artifact@main
       with:
@@ -226,7 +213,7 @@ jobs:
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_xinxi
     
-    - name: 清理Actions空间
+    - name: 清理空间
       continue-on-error: true
       if: env.REPO_TOKEN
       uses: Mattraks/delete-workflow-runs@v2
@@ -236,7 +223,7 @@ jobs:
         retain_days: ${{ env.RETAIN_DAYS }}
         keep_minimum_runs: 1
     
-    - name: 删除releases
+    - name: 删除固件
       continue-on-error: true
       if: env.REPO_TOKEN
       uses: danshui-git/delete-older-releases@main
@@ -247,14 +234,14 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
         
-    - name: 触发compile.yml启动"${{ matrix.target }}"编译
+    - name: 触发编译
       id: gitpush
       if: steps.compile.outcome == 'success' && env.REPO_TOKEN
       run: |
         cd ${GITHUB_WORKSPACE}
         source ${BUILD_PATH}/common.sh && build_openwrt
         
-    - name: 电报机器人或pushplus信息通知
+    - name: 信息通知
       if: env.PUSH_PLUS_TOKEN && env.INFORMATION_NOTICE == 'PUSH' || env.TELEGRAM_BOT_TOKEN && env.INFORMATION_NOTICE == 'TG'
       run: |
         if [[ "${{ env.INFORMATION_NOTICE }}" == "TG" ]]; then

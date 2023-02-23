@@ -139,11 +139,11 @@ TIME y ”关闭开机串口跑码“
 sed -i 's/console=tty0//g'  target/linux/x86/image/Makefile
 
 # ttyd设置空密码
-sed -i 's/\/bin\/login/\/bin\/login -f root/' /etc/config/ttyd
+#sed -i 's/\/bin\/login/\/bin\/login -f root/' /etc/config/ttyd
 
-echo 
-TIME y "修改连接数"
-sed -i '/customized in this file/a net.netfilter.nf_conntrack_max=165535' package/base-files/files/etc/sysctl.conf
+#echo 
+#TIME y "修改连接数"
+#sed -i '/customized in this file/a net.netfilter.nf_conntrack_max=165535' package/base-files/files/etc/sysctl.conf
 
 ## containerd临时关闭hash验证
 #sed -i 's/PKG_HASH.*/PKG_HASH:=skip/' feeds/packages/utils/containerd/Makefile

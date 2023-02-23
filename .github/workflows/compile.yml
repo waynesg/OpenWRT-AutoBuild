@@ -37,7 +37,8 @@ jobs:
 
     - name: 读取设置
       run: |
-        chmod -R +x "${GITHUB_WORKSPACE}/build/common"
+        cd ${GITHUB_WORKSPACE}
+        git clone https://github.com/waynesg/common build/common
         mv -f build/common/*.sh build/${{matrix.target}}/
         sudo chmod -R +x build
         if [[ -n "${{ github.event.workflow }}" ]]; then

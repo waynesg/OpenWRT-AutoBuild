@@ -1,8 +1,3 @@
-#
-# 编译主程序,请勿修改文件名称（compile.yml）
-#
-
-
 name: 编译主程序
 on:
   push:
@@ -25,7 +20,7 @@ env:
 
 jobs:
   build:
-    name: 编译 "${{matrix.target}}"
+    name: 开始编译
     runs-on: ubuntu-22.04
     if: ${{ github.event.repository.owner.id }} == ${{ github.event.sender.id }}
     
@@ -40,10 +35,9 @@ jobs:
     - name: 准备结束
       uses: actions/checkout@v3
 
-    - name: 读取脚本设置
+    - name: 读取设置
       run: |
-        cd ${GITHUB_WORKSPACE}
-        git clone https://github.com/281677160/common-main build/common
+        chmod -R +x "${GITHUB_WORKSPACE}/build/common"
         mv -f build/common/*.sh build/${{matrix.target}}/
         sudo chmod -R +x build
         if [[ -n "${{ github.event.workflow }}" ]]; then

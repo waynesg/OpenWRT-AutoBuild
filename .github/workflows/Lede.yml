@@ -129,6 +129,7 @@ jobs:
 
     - name: 读取脚本
       run: |
+        cd ${GITHUB_WORKSPACE}
         chmod -R +x "${GITHUB_WORKSPACE}/build/common"
         mv -f build/common/*.sh build/${{ env.FOLDER_NAME }}/
         chmod -R +x build

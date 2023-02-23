@@ -130,7 +130,6 @@ jobs:
     - name: 读取脚本
       run: |
         cd ${GITHUB_WORKSPACE}
-        chmod -R +x "${GITHUB_WORKSPACE}/build/common"
         mv -f build/common/*.sh build/${{ env.FOLDER_NAME }}/
         chmod -R +x build
         export SOURCE_CODE="$(source "build/${{ matrix.target }}/settings.ini" && echo ${SOURCE_CODE})"
@@ -160,7 +159,7 @@ jobs:
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
     
-    - name: 下载"${{ matrix.target }}"源码
+    - name: 下载源码
       working-directory: /${{ env.DIY_WORK }}
       run: |
         git clone -b "${REPO_BRANCH}" --single-branch "${REPO_URL}" openwrt

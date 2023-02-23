@@ -212,7 +212,7 @@ sed -i 's/"Cloudflare速度测试"/"Cloudflare"/g' package/waynesg/luci-app-clou
 #sed -i 's/"UU游戏加速器"/"UU加速器"/g' `grep "UU游戏加速器" -rl ./`
 #sed -i 's/UU游戏加速器/UU加速器/g' feeds/luci/applications/luci-app-uugamebooster/po/zh-cn/uuplugin.po
 #sed -i 's/"Rclone"/"Rclone挂载"/g' feeds/luci/applications/luci-app-rclone/luasrc/controller/rclone.lua
-sed -i 's/"定时更新"/"更新固件"/g' feeds/package/luci-app-autoupdate/luci-app-autoupdate/po/zh-cn/autoupdate.po
+sed -i 's/"定时更新"/"更新固件"/g' feeds/package/luci-app-autoupdate/po/zh-cn/autoupdate.po
 sed -i 's/定时更新 LUCI/固件更新 LUCI/g' feeds/package/luci-app-autoupdate/po/zh-cn/autoupdate.po
 echo "重命名网络菜单"
 #network
